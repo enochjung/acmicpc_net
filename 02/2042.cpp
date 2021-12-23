@@ -1,50 +1,47 @@
 #include <cstdio>
+#define N 1000001
 
 int n, m, k;
-long long t[1000010];
+long long t[N];
 
-void update(int idx, int val)
+long long sum(int idx)
 {
-	while(idx <= n)
+	long long res = 0;
+	while (idx)
 	{
-		t[idx] += val;
-		idx += idx&(-idx);
-	}
-}
-
-long long get(int idx)
-{
-	long long sum = 0;
-
-	while(idx)
-	{
-		sum += t[idx];
+		res += t[idx];
 		idx -= idx&(-idx);
 	}
+	return res;
+}
 
-	return sum;
+void update(int idx, long long val)
+{
+	long long delta = val-(sum(idx)-sum(idx-1));
+	while (idx <= n)
+	{
+		t[idx] += delta;
+		idx += idx&(-idx);
+	}
 }
 
 int main()
 {
 	scanf("%d %d %d", &n, &m, &k);
-	for(int i=1; i<=n; ++i)
+	for (int i=1; i<=n; ++i)
 	{
-		int v;
-		scanf("%d", &v);
+		long long v;
+		scanf("%lld", &v);
 		update(i, v);
 	}
-	for(int i=0; i<m+k; ++i)
+	for (int i=0; i<m+k; ++i)
 	{
-		int a, b, c;
-		scanf("%d %d %d", &a, &b, &c);
+		long long a, b, c;
+		scanf("%lld %lld %lld", &a, &b, &c);
 		if(a == 1)
-		{
-			int v = get(b)-get(b-1);
-			update(b, c-v);
-		}
+			update(b, c);
 		else
-			printf("%lld\n", get(c)-get(b-1));
+			printf("%lld\n", sum(c)-sum(b-1));
 	} 
 	
 	return 0;

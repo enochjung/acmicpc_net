@@ -20,11 +20,8 @@ private:
 			return;
 
 		polynomial even(n/2), odd(n/2);
-		for(int i=0; i<n; i+=2)
-		{
-			even[i/2] = dst[i];
-			odd[i/2] = dst[i+1];
-		}
+		for (int i=0; i<n; ++i)
+			(i&1? odd : even)[i/2] = dst[i];
 
 		DFT(even, w*w);
 		DFT(odd, w*w);
@@ -54,19 +51,24 @@ private:
 	}
 
 public:
-	static void mul(polynomial& a, polynomial& b, polynomial& res)
+	static polynomial mul(polynomial& a, polynomial& b)
 	{
 		int n = 1;
 		for(; n<=(int)max(a.size(),b.size()); n<<=1);
-		a.resize(n), b.resize(n), res.resize(n);
+		n <<= 1;
+		a.resize(n);
+		b.resize(n);
+		polynomial res(n);
 
-		DFT(a), DFT(b);
+		DFT(a);
+		DFT(b);
 
-		for(int i=0; i<n; ++i) {
+		for(int i=0; i<n; ++i)
 			res[i] = a[i]*b[i];
-		}
 
 		DFT(res, true);
+
+		return res;
 	}
 
 	static long long get_integer(const C& c)
@@ -92,11 +94,11 @@ int main()
 		b[n-i-1] = v;
 	}
 
-	FFT::mul(a, b, res);
+	res = FFT::mul(a, b);
 
 	long long ans = FFT::get_integer(res[n-1]);
 	for (int i=0; i<n-1; ++i)
 		ans = max(ans, FFT::get_integer(res[i])+FFT::get_integer(res[n+i]));
-	printf("%lld", ans);
+	printf("%lld\n", ans);
 	return 0;
 }

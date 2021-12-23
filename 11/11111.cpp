@@ -1,137 +1,147 @@
 #include <cstdio>
-#include <cstring>
 #include <algorithm>
 #include <queue>
 #include <vector>
-#define N 60
-#define V 2510
-#define INF 999999999
+#define N 51
+#define M (N*N)
+#define INF 0x7fffffff
 
 using namespace std;
 
-const int cost[5][5] = 
+class mcmf
 {
-	{10, 8, 7, 5, 1},
-	{8, 6, 4, 3, 1},
-	{7, 4, 3, 2, 1},
-	{5, 3, 2, 2, 1},
-	{1, 1, 1, 1, 0}
+private:
+	struct edge
+	{
+		int to, cap, cost, rev;
+		edge(int to, int cap, int cost) : to(to), cap(cap), cost(cost) {}
+	};
+
+	int n, src, sink;
+	vector<vector<edge>> e;
+	vector<int> d;
+	vector<pair<int,int>> p;
+
+public:
+	mcmf(int n, int src, int sink) : n(n), src(src), sink(sink)
+	{
+		e.resize(n);
+		d.resize(n);
+		p.resize(n);
+	}
+
+	void add_edge(int from, int to, int cap, int cost)
+	{
+		e[from].push_back({to, cap, cost});
+		e[to].push_back({from, 0, -cost});
+		e[from].back().rev = e[to].size()-1;
+		e[to].back().rev = e[from].size()-1;
+	}
+
+	pair<int,int> flow()
+	{
+		int flow = 0;
+		int cost = 0;
+		vector<bool> iq;
+		iq.resize(n);
+
+		while(1)
+		{
+			queue<int> q;
+
+			fill(d.begin(), d.end(), INF);
+			fill(p.begin(), p.end(), make_pair(-1, -1));
+
+			d[src] = 0;
+			q.push(src);
+			iq[src] = true;
+			while(!q.empty())
+			{
+				int now = q.front();
+				q.pop();
+				iq[now] = false;
+
+				for(int i=0; i<(int)e[now].size(); ++i)
+				{
+					auto &t = e[now][i];
+					if(t.cap && d[t.to]>d[now]+t.cost)
+					{
+						d[t.to] = d[now]+t.cost;
+						p[t.to] = {now, i};
+						if(!iq[t.to])
+						{
+							q.push(t.to);
+							iq[t.to] = true;
+						}
+					}
+				}
+			}
+			if(p[sink].first == -1)
+				break;
+
+			int f = INF;
+			for(int i=sink; i!=src; i=p[i].first)
+				f = min(f, e[p[i].first][p[i].second].cap);
+			flow += f;
+
+			for(int i=sink; i!=src; i=p[i].first)
+			{
+				auto &t = e[p[i].first][p[i].second];
+				cost += f*t.cost;
+				t.cap -= f;
+				e[i][t.rev].cap += f;
+			}
+		}
+
+		return {flow, cost};
+	}
 };
-const int dx[4] = {-1, 0, 1, 0};
-const int dy[4] = {0, -1, 0, 1};
 
 int n, m;
 char a[N][N];
-
-int c[V][V];
-int d[V][V];
-int f[V][V];
-vector<int> edge[V];
-
-int ctoi(char c)
+int dx[] = {-1, 1, 0, 0}, dy[] = {0, 0, -1, 1};
+int p[5][5] =
 {
-	return c=='F'? 4 : c-'A';
-}
+	{10, 8, 7, 5, 1},
+	{ 8, 6, 4, 3, 1},
+	{ 7, 4, 3, 2, 1},
+	{ 5, 3, 2, 2, 1},
+	{ 1, 1, 1, 1, 0}
+};
 
-bool is_bound(int x, int y)
+int price(char x, char y)
 {
-	return 0<=x && x<n && 0<=y && y<m;
+	int xx = x=='F'? 4 : x-'A';
+	int yy = y=='F'? 4 : y-'A';
+	return p[xx][yy];
 }
 
 int main()
 {
 	scanf("%d %d", &n, &m);
-	for(int i=0; i<n; ++i)
+	for (int i=0; i<n; ++i)
 		scanf("%s", a[i]);
 
-	for(int i=1; i<=n*m/2; ++i)
-	{
-		c[0][i] = 1;
-		edge[0].push_back(i);
-		edge[i].push_back(0);
-		c[i][n*m+1] = 1;
-		edge[i].push_back(n*m+1);
-		edge[n*m+1].push_back(i);
-	}
-	for(int i=n*m/2+1; i<=n*m; ++i)
-	{
-		c[i][n*m+1] = 1;
-		edge[i].push_back(n*m+1);
-		edge[n*m+1].push_back(i);
-	}
+	mcmf mf(n*m+2, n*m, n*m+1);
 
-	for(int i=1; i<n*m; i+=2)
-	{
-		int x = i/m;
-		int y = i%m;
-		int idx_i = i/2+1;
-		int num_i = ctoi(a[x][y]);
-		for(int t=0; t<4; ++t)
+	for (int i=0; i<n; ++i)
+		for (int j=i&1; j<m; j+=2)
 		{
-			int tx = x+dx[t];
-			int ty = y+dy[t];
-			if(is_bound(tx, ty))
+			mf.add_edge(n*m, i*m+j, 1, 0);
+			mf.add_edge(i*m+j, n*m+1, 1, 0);
+
+			for (int w=0; w<4; ++w)
 			{
-				int j = tx*m + ty;
-				int idx_j = j/2+n*m/2+1;
-				int num_j = ctoi(a[tx][ty]);
-				c[idx_i][idx_j] = 1;
-				d[idx_i][idx_j] = -cost[num_i][num_j];
-				d[idx_j][idx_i] = cost[num_i][num_j];
-				edge[idx_i].push_back(idx_j);
-				edge[idx_j].push_back(idx_i);
+				int ti = i+dx[w];
+				int tj = j+dy[w];
+				if (0<=ti && ti<n && 0<=tj && tj<m)
+					mf.add_edge(i*m+j, ti*m+tj, 1, -price(a[i][j], a[ti][tj]));
 			}
 		}
-	}
+	for (int i=0; i<n; ++i)
+		for (int j=1-(i&1); j<m; j+=2)
+			mf.add_edge(i*m+j, n*m+1, 1, 0);
 
-	int res = 0;
-	while(true)
-	{
-		int p[V], dist[V];
-		bool visited[V] = {};
-		queue<int> q;
-
-		memset(p, -1, sizeof(p));
-		for(int i=0; i<n*m+2; ++i)
-			dist[i] = INF;
-		dist[0] = 0;
-		visited[0] = true;
-		q.push(0);
- 
-		while(!q.empty())
-		{
-			int now = q.front();
-			q.pop();
-
-			visited[now] = false;
-			for(int to : edge[now])
-				if(c[now][to]-f[now][to]>0 && dist[to]>dist[now]+d[now][to])
-				{
-					dist[to] = dist[now]+d[now][to];
-					p[to] = now;
-					if(!visited[to])
-					{
-						q.push(to);
-						visited[to] = true;
-					}
-				}
-		}
-
-		if(p[n*m+1] == -1)
-			break;
- 
-		int flow = INF;
-		for(int i=n*m+1; i!=0; i=p[i])
-			flow = min(flow, c[p[i]][i] - f[p[i]][i]);
- 
-		for(int i=n*m+1; i!=0; i=p[i])
-		{
-			res += flow * d[p[i]][i];
-			f[p[i]][i] += flow;
-			f[i][p[i]] -= flow;
-		}
-	}
-
-	printf("%d", -res);
+	printf("%d\n", -mf.flow().second);
 	return 0;
 }

@@ -19,10 +19,10 @@ bool compare(const point &i, const point &j)
 
 int main()
 {
-	for(scanf("%d",&t); t--;)
+	for (scanf("%d",&t); t--;)
 	{
 		scanf("%d", &n);
-		for(int i=0; i<n; i++)
+		for (int i=0; i<n; ++i)
 		{
 			int x, y;
 			scanf("%d %d", &x, &y);
@@ -31,7 +31,7 @@ int main()
 				swap(p[0], p[i]);
 		}
 
-		sort(p+1, p+n);
+		sort(p+1, p+n, [](point));
 
 		for(int i=0; i<n; i++)
 			printf("%d %d\n", p[i].x, p[i].y);

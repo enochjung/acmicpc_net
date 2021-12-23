@@ -1,3 +1,4 @@
+#include <iostream>
 #include <cstdio>
 
 int a, b;
