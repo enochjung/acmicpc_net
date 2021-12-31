@@ -1,5 +1,8 @@
 {
 	"code-runner.executorMap": {
-		"cpp": "g++ -g $fullFileName -lm && ./a.exe"
+		"cpp": "g++ -std=c++17 -g $fullFileName -lm && ./a.exe"
+	},
+	"files.associations": {
+		"vector": "cpp"
 	}
 }
