@@ -1,40 +1,84 @@
-#include <stdio.h>
+#include <cstdio>
 #include <algorithm>
+#include <vector>
 
-using namespace std;
-
-struct point
-{
+struct point {
 	int x, y;
-} p[60];
+};
 
-int t, n;
-
-bool compare(const point &i, const point &j)
-{
-	int dix=i.x-p[0].x, diy=i.y-p[0].y;
-	int djx=j.x-p[0].x, djy=j.y-p[0].y;
-	return 1LL*diy*diy*(djx*djx+djy*djy) < 1LL*djy*djy*(dix*dix+diy*diy);
+int ccw(const point &a, const point &b, const point &c) {
+	int value = a.x*b.y + b.x*c.y + c.x*a.y - b.x*a.y - c.x*b.y - a.x*c.y;
+	return value==0? 0 : value/abs(value);
 }
 
-int main()
-{
-	for (scanf("%d",&t); t--;)
-	{
+int length(const point &a, const point &b) {
+	return (a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y);
+}
+
+std::vector<point> get_convex_hull(const std::vector<point> &points) {
+	std::vector<point> stack;
+
+	stack.push_back(points[0]);
+	stack.push_back(points[1]);
+	for (int i=2; i<=(int)points.size(); ++i) {
+		point a, b, c;
+		bool final_round = i == (int)points.size();
+		c = !final_round? points[i] : points[0];
+		bool push_c = true;
+
+		while ((int)stack.size() >= 2) {
+			b = stack.back();
+			stack.pop_back();
+			a = stack.back();
+
+			if (ccw(a, b, c) == 0) {
+				if (length(a, b) > length(a, c)) {
+					stack.push_back(b);
+					push_c = false;
+				}
+				break;
+			}
+			else if (ccw(a, b, c) < 0) {
+				stack.push_back(b);
+				break;
+			}
+		}
+		if (push_c && !final_round)
+			stack.push_back(c);
+	}
+	return stack;
+}
+
+int main() {
+	int p;
+	scanf("%d", &p);
+
+	for (int test_case=0; test_case<p; ++test_case) {
+		int n;
 		scanf("%d", &n);
-		for (int i=0; i<n; ++i)
-		{
+
+		std::vector<point> points(n);
+		for (int i=0; i<n; ++i) {
 			int x, y;
 			scanf("%d %d", &x, &y);
-			p[i] = {x, y};
-			if(p[0].y>p[i].y || (p[0].y==p[i].y && p[0].x>p[i].x))
-				swap(p[0], p[i]);
+			points[i] = {x, y};
 		}
 
-		sort(p+1, p+n, [](point));
+		auto compare_coordinate = [](const point &lhs, const point &rhs) -> bool {
+			return lhs.y != rhs.y? lhs.y > rhs.y : lhs.x < rhs.x;
+		};
+		auto compare_ccw = [&first_point = std::as_const(points[0])](const point &lhs, const point &rhs) -> bool {
+			return ccw(first_point, lhs, rhs) < 0;
+		};
 
-		for(int i=0; i<n; i++)
-			printf("%d %d\n", p[i].x, p[i].y);
+		std::sort(points.begin(), points.end(), compare_coordinate);
+		std::sort(points.begin()+1, points.end(), compare_ccw);
+
+		std::vector<point> convex_hull = get_convex_hull(points);
+
+		printf("%d\n", (int)convex_hull.size());
+		for (point p : convex_hull)
+			printf("%d %d\n", p.x, p.y);
 	}
 
 	return 0;
