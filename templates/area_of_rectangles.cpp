@@ -1,4 +1,3 @@
-#include <cstdio>
 #include <algorithm>
 #include <functional>
 #include <vector>
@@ -147,19 +146,3 @@ public:
 		return area;
 	}
 };
-
-int main()
-{
-	int n;
-	area_of_rectangles ar;
-
-	scanf("%d", &n);
-	for (int i=0; i<n; ++i) {
-		rectangle r;
-		scanf("%d %d %d %d", &r.x1, &r.x2, &r.y1, &r.y2);
-		ar.add_rectangle(r);
-	}
-
-	printf("%lld\n", ar.get_area());
-	return 0;
-}

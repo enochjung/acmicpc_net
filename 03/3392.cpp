@@ -156,7 +156,7 @@ int main()
 	scanf("%d", &n);
 	for (int i=0; i<n; ++i) {
 		rectangle r;
-		scanf("%d %d %d %d", &r.x1, &r.x2, &r.y1, &r.y2);
+		scanf("%d %d %d %d", &r.x1, &r.y1, &r.x2, &r.y2);
 		ar.add_rectangle(r);
 	}
 
