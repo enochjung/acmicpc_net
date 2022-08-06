@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cstdio>
 #include <stack>
 #include <vector>
 
@@ -56,31 +55,3 @@ class scc {
         return top;
     }
 };
-
-int main() {
-    int v, e;
-    std::vector<std::vector<int>> edge;
-
-    scanf("%d %d", &v, &e);
-    edge.resize(v);
-
-    for (int i = 0; i < e; ++i) {
-        int a, b;
-        scanf("%d %d", &a, &b);
-        --a, --b;
-        edge[a].push_back(b);
-    }
-
-    auto scc_vec = scc::get(v, edge);
-
-    for (int i = 0; i < (int)scc_vec.size(); ++i)
-        std::sort(scc_vec[i].begin(), scc_vec[i].end());
-    std::sort(scc_vec.begin(), scc_vec.end());
-
-    printf("%d\n", (int)scc_vec.size());
-    for (auto &now : scc_vec) {
-        for (int val : now) printf("%d ", val + 1);
-        printf("-1\n");
-    }
-    return 0;
-}

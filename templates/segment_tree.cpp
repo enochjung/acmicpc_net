@@ -1,11 +1,10 @@
-#include <cstdio>
 #include <functional>
 #include <vector>
 
 template <typename T>
-class binary_tree {
+class segment_tree {
    public:
-    binary_tree(int n, std::function<T(T, T)> type, T initial_value)
+    segment_tree(int n, std::function<T(T, T)> type, T initial_value)
         : type(type), initial_value(initial_value) {
         for (size = 1; size < n; size <<= 1)
             ;
@@ -42,28 +41,3 @@ class binary_tree {
         return type(left, right);
     }
 };
-
-int main() {
-    int n, m, k;
-    scanf("%d %d %d", &n, &m, &k);
-
-    binary_tree<long long> tree(
-        n, [](long long lhs, long long rhs) { return lhs + rhs; }, 0);
-
-    for (int i = 0; i < n; ++i) {
-        long long v;
-        scanf("%lld", &v);
-        tree.set(i, v);
-    }
-
-    for (int i = 0; i < m + k; ++i) {
-        long long a, b, c;
-        scanf("%lld %lld %lld", &a, &b, &c);
-        if (a == 1)
-            tree.set(b - 1, c);
-        else
-            printf("%lld\n", tree.get(b - 1, c));
-    }
-
-    return 0;
-}
