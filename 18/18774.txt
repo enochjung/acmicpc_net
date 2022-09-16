@@ -1,0 +1,60 @@
+get A
+get B
+get C
+get D
+get E
+get F
+get G
+
+mov H G
+shl H 1
+or H F
+shl H 1
+or H E
+shl H 1
+or H D
+shl H 1
+or H C
+shl H 1
+or H B
+shl H 1
+or H A
+
+not H
+
+mov O 1
+
+mov I H
+and I O
+put I
+shr H 1
+
+mov I H
+and I O
+put I
+shr H 1
+
+mov I H
+and I O
+put I
+shr H 1
+
+mov I H
+and I O
+put I
+shr H 1
+
+mov I H
+and I O
+put I
+shr H 1
+
+mov I H
+and I O
+put I
+shr H 1
+
+mov I H
+and I O
+put I
+shr H 1

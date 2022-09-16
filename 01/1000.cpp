@@ -1,10 +1,10 @@
 #include <cstdio>
 
-int a, b;
+int main() {
+    int a, b;
 
-int main()
-{
-	scanf("%d %d", &a, &b);
-	printf("%d", a+b);
-	return 0;
+    scanf("%d %d", &a, &b);
+    printf("%d\n", a + b);
+
+    return 0;
 }
