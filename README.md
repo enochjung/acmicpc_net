@@ -4,4 +4,4 @@
  틀린 코드도 있어요
  
  ### 작업환경
- windows mingw64 + vscode coderunner
+ vscode CodeRunner, g++
