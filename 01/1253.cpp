@@ -1,31 +1,32 @@
 #include <cstdio>
 #include <algorithm>
-#define N 2010
+#define N 2000
 
-using namespace std;
+bool is_good(int idx, int n, int a[]) {
+    for (int i = 0; i < n; ++i) {
+        if (i == idx) continue;
 
-int n, a[N];
-int res;
+        int lidx = std::lower_bound(a + i + 1, a + n, a[idx] - a[i]) - a;
+        int ridx = std::upper_bound(a + i + 1, a + n, a[idx] - a[i]) - a;
 
-int main()
-{
-	scanf("%d", &n);
-	for(int i=0; i<n; ++i)
-		scanf("%d", a+i);
+        int len = (lidx <= idx && idx < ridx ? -1 : 0) + ridx - lidx;
+        if (len > 0) return true;
+    }
+    return false;
+}
 
-	sort(a, a+n);
-	for(int d=0; d<n; ++d)
-		for(int i=0; i<n; ++i)
-			if(i != d)
-			{
-				int idx = (int)(lower_bound(a,a+n,a[d]-a[i]) - a);
-				if(idx<n && a[idx]==a[d]-a[i] && idx!=i)
-				{
-					res++;
-					break;
-				}
-			}
+int main() {
+    int n, a[N];
 
-	printf("%d", res);
-	return 0;
+    scanf("%d", &n);
+    for (int i = 0; i < n; ++i) scanf("%d", a + i);
+
+    std::sort(a, a + n);
+
+    int res = 0;
+    for (int i = 0; i < n; ++i)
+        if (is_good(i, n, a)) ++res;
+    printf("%d\n", res);
+
+    return 0;
 }

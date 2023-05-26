@@ -1,45 +1,52 @@
 #include <cstdio>
+#include <cmath>
 #include <algorithm>
-#include <map>
+#include <numeric>
 #include <vector>
 
-using namespace std;
+#define MAX_VAL 4000
 
-int n, a[500010];
-int sum;
-map<int,int> m;
-vector<int> res;
+int mean(const std::vector<int> &a) {
+    int sum = std::accumulate(a.begin(), a.end(), 0);
+    return round((double)sum / a.size());
+}
 
-int main()
-{
-	scanf("%d", &n);
-	for(int i=0; i<n; i++)
-	{
-		scanf("%d", a+i);
-		sum += a[i];
-		m[a[i]]++;
-	}
+int median(const std::vector<int> &a) { return a[a.size() / 2]; }
 
-	sort(a, a+n);
+int mode(const std::vector<int> &a) {
+    struct st {
+        int cnt;
+        int val;
+        bool operator<(const st &hs) const {
+            return cnt != hs.cnt ? cnt > hs.cnt : val < hs.val;
+        }
+    };
 
-	int v = 0;
-	for(auto it=m.begin(); it!=m.end(); ++it)
-	{
-		if(v < it->second)
-		{
-			v = it->second;
-			res.clear();
-			res.push_back(it->first);
-		}
-		else if(v == it->second)
-			res.push_back(it->first);
-	}
+    std::vector<st> vec(MAX_VAL * 2 + 1);
+    for (int i = 0; i < MAX_VAL * 2 + 1; ++i) vec[i] = {0, i - MAX_VAL};
 
-	sort(res.begin(), res.end());
+    for (int val : a) ++vec[val + MAX_VAL].cnt;
 
-	printf("%.0lf\n", (double)sum/n);
-	printf("%d\n", a[(n-1)/2]);
-	printf("%d\n", (int)res.size()>1? res[1] : res[0]);
-	printf("%d\n", a[n-1]-a[0]);
-	return 0;
+    std::sort(vec.begin(), vec.end());
+
+    return vec[0].cnt > vec[1].cnt ? vec[0].val : vec[1].val;
+}
+
+int range(const std::vector<int> &a) { return a.back() - a.front(); }
+
+int main() {
+    int n;
+    scanf("%d", &n);
+
+    std::vector<int> a(n);
+    for (int i = 0; i < n; ++i) scanf("%d", &a[i]);
+
+    std::sort(a.begin(), a.end());
+
+    printf("%d\n", mean(a));
+    printf("%d\n", median(a));
+    printf("%d\n", mode(a));
+    printf("%d\n", range(a));
+
+    return 0;
 }

@@ -1,0 +1,10 @@
+{
+	"code-runner.runInTerminal": true,
+	"code-runner.saveFileBeforeRun": true,
+	"code-runner.executorMap": {
+		"cpp": "g++ -std=c++20 $dir$fileName -o a.out && ./a.out",
+	},
+	"files.associations": {
+		"vector": "cpp"
+	}
+}
