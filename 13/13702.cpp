@@ -1,35 +1,36 @@
 #include <cstdio>
-#include <limits>
+#include <vector>
 
-int n, k, a[10010];
-
-bool f(int x)
-{
-	int sum = 0;
-	for(int i=0; i<n; ++i)
-		sum += a[i]/x;
-	return sum >= k;
+long long get_capacity(const std::vector<int> &water, unsigned int x) {
+    long long sum = 0;
+    for (int w : water) sum += w / x;
+    return sum;
 }
 
-int main()
-{
-	int low = 0;
-	int high = std::numeric_limits<int>::max();
+int get_answer(const std::vector<int> &water, int k) {
+    unsigned int low = 0;
+    unsigned int high = (1 << 31);
 
-	scanf("%d %d", &n, &k);
-	for(int i=0; i<n; ++i)
-		scanf("%d", a+i);
+    while (low + 1 < high) {
+        unsigned int mid = (low + high) / 2;
 
-	for(int w=0; w<100; w++)
-	{
-		int mid = (low+high)/2;
+        if (get_capacity(water, mid) >= k)
+            low = mid;
+        else
+            high = mid;
+    }
 
-		if(f(mid))
-			low = mid;
-		else
-			high = mid;
-	}
+    return (int)low;
+}
 
-	printf("%d", low);
-	return 0;
+int main() {
+    int n, k;
+    std::vector<int> water;
+
+    scanf("%d %d", &n, &k);
+    water.resize(n);
+    for (int i = 0; i < n; ++i) scanf("%d", &water[i]);
+
+    printf("%d\n", get_answer(water, k));
+    return 0;
 }

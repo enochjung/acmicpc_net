@@ -1,31 +1,48 @@
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
 
-typedef long long int lli;
-
-lli a, b;
-
-lli gcd(lli i, lli j)
-{
-	while(i%j)
-	{
-		lli tmp = j;
-		j = i%j;
-		i = tmp;
-	}
-	return j;
+int gcd(long long x, long long y) {
+    while (x % y) {
+        long long tmp = y;
+        y = x % y;
+        x = tmp;
+    }
+    return (int)y;
 }
 
-int main()
-{
-	scanf("%lld %lld", &a, &b);
+int isqrt(long long x) {
+    long long m = (1LL << 60);
+    long long r = 0;
+    do {
+        long long nr = m | r;
+        r >>= 1;
+        if (nr <= x) {
+            x -= nr;
+            r += m;
+        }
+        m >>= 2;
+    } while (m != 0);
+    return (int)r;
+}
 
-	lli p, q;
-	p = (lli)sqrt(b) - (lli)sqrt(a);
-	q = b - a;
+int get_n_of_squared(long long start, long long end) {
+    int sq_start = isqrt(start - 1) + 1;
+    int sq_end = isqrt(end - 1) + 1;
+    return sq_end - sq_start;
+}
 
-	if(p == 0) return printf("0");
+int main() {
+    long long a, b;
+    scanf("%lld %lld", &a, &b);
 
-	lli g = gcd(p, q);
-	printf("%lld/%lld", p/g, q/g);
+    int count = get_n_of_squared(a + 1, b + 1);
+    long long width = b - a;
+
+    if (count == 0)
+        printf("0\n");
+    else {
+        int g = gcd(count, width);
+        printf("%d/%lld\n", count / g, width / g);
+    }
+
+    return 0;
 }

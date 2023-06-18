@@ -1,80 +1,92 @@
-#include <stdio.h>
-#include <string.h>
-#include <stack>
+#include <cstdio>
+#include <algorithm>
+#include <vector>
 
-using namespace std;
+class segment_tree {
+   private:
+    struct node {
+        int val, idx;
+    };
 
-int t, n, a[100010];
-int l[100010], r[100010];
+    int n;
+    std::vector<node> tree;
 
-int main()
-{
-	for(scanf("%d",&t); t--;)
-	{
-		stack<pair<int,int>> s;
+    void set(int idx, int left, int right, node data) {
+        if (data.idx < left || right <= data.idx) return;
+        if (left + 1 == right) {
+            tree[idx] = data;
+            return;
+        }
 
-		scanf("%d", &n);
-		for(int i=0; i<n; i++)
-			scanf("%d", a+i);
+        if (tree[idx].val < data.val) tree[idx] = data;
+        int mid = (left + right) / 2;
+        set(idx * 2 + 0, left, mid, data);
+        set(idx * 2 + 1, mid, right, data);
+    }
 
-		memset(l, -1, sizeof(l));
-		memset(r, -1, sizeof(r));
+    node get(int idx, int start, int end, int left, int right) const {
+        if (end <= left || right <= start) return {0, 0};
+        if (start <= left && right <= end) return tree[idx];
 
-		for(int i=0; i<n; i++)
-		{
-			while(!s.empty() && s.top().second<=a[i])
-			{
-				r[s.top().first] = i;
-				s.pop();
-			}
-			s.push({i, a[i]});
-		}
-		while(!s.empty()) s.pop();
+        int mid = (left + right) / 2;
+        node ln = get(idx * 2 + 0, start, end, left, mid);
+        node rn = get(idx * 2 + 1, start, end, mid, right);
+        return ln.val >= rn.val ? ln : rn;
+    }
 
-		for(int i=n-1; i>=0; i--)
-		{
-			while(!s.empty() && s.top().second<=a[i])
-			{
-				l[s.top().first] = i;
-				s.pop();
-			}
-			s.push({i, a[i]});
-		}
+   public:
+    segment_tree(int size) {
+        for (n = 1; n < size; n <<= 1)
+            ;
+        tree.resize(n * 2);
+    }
 
-		int res = 0;
-		for(int i=0; i<n-1; i++)
-		{
-			int w = 0;
-			int p=i, q=i+1;
-			int bh = 0;
-			
-			while(!((a[p]>a[q] && r[q]==-1) || (a[p]<=a[q] && l[p]==-1)))
-			{
-				if(a[p] > a[q])
-				{
-					w += (a[q]-bh)*(q-p);
-					bh = a[q];
-					q = r[q];
-				}
-				else if(a[p] < a[q])
-				{
-					w += (a[p]-bh)*(q-p);
-					bh = a[p];
-					p = l[p];
-				}
-				else
-				{
-					w += (a[p]-bh)*(q-p);
-					bh = a[p];
-					p = l[p];
-					q = r[q];
-				}
-			}
+    void set(int idx, int val) { set(1, 0, n, {val, idx}); }
 
-			if(res < w) res = w;
-		}
+    int get(int start, int end) const { return get(1, start, end, 0, n).idx; }
+};
 
-		printf("%d\n", res);
-	}
-	return 0;
+int get_maximum_water(const std::vector<int> &walls, const segment_tree &st,
+                      int start, int end) {
+    if (start + 2 == end) return std::min(walls[start], walls[start + 1]);
+
+    int highest_wall_idx = st.get(start + 1, end - 1);
+    int highest_wall_height = walls[highest_wall_idx];
+    int width = end - start - 1;
+    int height = std::max(0, std::min(walls[start] - highest_wall_height,
+                                      walls[end - 1] - highest_wall_height));
+    int water_above = width * height;
+
+    int water_below =
+        std::max(get_maximum_water(walls, st, start, highest_wall_idx + 1),
+                 get_maximum_water(walls, st, highest_wall_idx, end));
+    return water_above + water_below;
+}
+
+int get_answer(const std::vector<int> &walls) {
+    int n = (int)walls.size();
+    segment_tree st(n);
+
+    for (int i = 0; i < n; ++i) st.set(i, walls[i]);
+
+    return get_maximum_water(walls, st, 0, n);
+}
+
+int main() {
+    int t;
+
+    scanf("%d", &t);
+
+    while (t--) {
+        int n;
+        std::vector<int> a;
+
+        scanf("%d", &n);
+        a.resize(n);
+        for (int i = 0; i < n; i++) scanf("%d", &a[i]);
+
+        printf("%d\n", get_answer(a));
+    }
+
+    return 0;
 }

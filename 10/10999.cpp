@@ -1,107 +1,95 @@
 #include <cstdio>
-#define N 1<<21
+#include <algorithm>
+#include <vector>
 
-long long v[N]={}, l[N]={};
+class segment_tree {
+   private:
+    struct node {
+        long long sum, lazy;
+    };
 
-class segment_tree
-{
-private:
-	int start;
+    int n;
+    std::vector<node> tree;
 
-	void propagate(int idx, int width)
-	{
-		if(l[idx])
-		{
-			if(idx < start)
-			{
-				l[idx*2] += l[idx];
-				l[idx*2+1] += l[idx];
-			}
-			v[idx] += l[idx]*width;
-			l[idx] = 0;
-		}
-	}
+    void update_sum(int idx, int width) {
+        tree[idx].sum += tree[idx].lazy * width;
+        if (idx < n) {
+            tree[idx * 2 + 0].lazy += tree[idx].lazy;
+            tree[idx * 2 + 1].lazy += tree[idx].lazy;
+        }
+        tree[idx].lazy = 0;
+    }
 
-	void add(int idx, int s, int e, int a, int b, int val)
-	{
-		propagate(idx, e-s);
+    void add_lazily(int idx, int start, int end, int left, int right,
+                    long long val) {
+        if (right <= start || end <= left) return;
+        if (start <= left && right <= end) {
+            tree[idx].lazy += val;
+            return;
+        }
 
-		if(b<=s || e<=a)
-			return;
+        int width = std::min(end, right) - std::max(start, left);
+        tree[idx].sum += val * width;
 
-		if(a<=s && e<=b)
-		{
-			l[idx] += val;
-			propagate(idx, e-s);
-			return;
-		}
+        int mid = (left + right) / 2;
+        add_lazily(idx * 2 + 0, start, end, left, mid, val);
+        add_lazily(idx * 2 + 1, start, end, mid, right, val);
+    }
 
-		int mid = (s+e)/2;
-		add(idx*2, s, mid, a, b, val);
-		add(idx*2+1, mid, e, a, b, val);
-		v[idx] = v[idx*2]+v[idx*2+1];
-	}
+    long long get_sum(int idx, int start, int end, int left, int right) {
+        update_sum(idx, right - left);
 
-	long long sum(int idx, int s, int e, int a, int b)
-	{
-		propagate(idx, e-s);
+        if (right <= start || end <= left) return 0;
+        if (start <= left && right <= end) return tree[idx].sum;
 
-		if(b<=s || e<=a)
-			return 0;
+        int mid = (left + right) / 2;
+        return get_sum(idx * 2 + 0, start, end, left, mid) +
+               get_sum(idx * 2 + 1, start, end, mid, right);
+    }
 
-		if(a<=s && e<=b)
-			return v[idx];
+   public:
+    segment_tree(int size) {
+        for (n = 1; n < size; n <<= 1)
+            ;
+        tree.resize(n * 2, {0, 0});
+    }
 
-		int mid = (s+e)/2;
-		return sum(idx*2, s, mid, a, b) + sum(idx*2+1, mid, e, a, b);
-	}
+    void add(int start, int end, long long val) {
+        add_lazily(1, start, end, 0, n, val);
+    }
 
-public:
-	segment_tree(int size)
-	{
-		for(start=1; start<size; start<<=1);
-	}
-
-	void add(int a, int b, int val)
-	{
-		add(1, 1, start, a, b, val);
-	}
-
-	long long sum(int a, int b)
-	{
-		return sum(1, 1, start, a, b);
-	}
+    long long get_sum(int start, int end) {
+        return get_sum(1, start, end, 0, n);
+    }
 };
 
-int n, m, k;
+int main() {
+    int n, m, k;
 
-int main()
-{
-	scanf("%d %d %d", &n, &m, &k);
-	segment_tree s(n);
+    scanf("%d %d %d", &n, &m, &k);
+    segment_tree st(n);
 
-	for(int i=0; i<n; ++i)
-	{
-		int a;
-		scanf("%d", &a);
-		s.add(i+1, i+2, a);
-	}
+    for (int i = 0; i < n; ++i) {
+        long long val;
+        scanf("%lld", &val);
+        st.add(i, i + 1, val);
+    }
 
-	for(int i=0; i<m+k; ++i)
-	{
-		int a, b, c, d;
-		scanf("%d", &a);
-		if(a == 1)
-		{
-			scanf("%d %d %d", &b, &c, &d);
-			s.add(b, c+1, d);
-		}
-		else
-		{
-			scanf("%d %d", &b, &c);
-			printf("%lld\n", s.sum(b, c+1));
-		}
-	}
+    for (int i = 0; i < m + k; ++i) {
+        int type;
+        scanf("%d", &type);
+        if (type == 1) {
+            int start, end;
+            long long val;
+            scanf("%d %d %lld", &start, &end, &val);
+            st.add(start - 1, end, val);
 
-	return 0;
+        } else {
+            int start, end;
+            scanf("%d %d", &start, &end);
+            printf("%lld\n", st.get_sum(start - 1, end));
+        }
+    }
+
+    return 0;
 }

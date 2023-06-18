@@ -1,35 +1,45 @@
 #include <cstdio>
-#include <set>
-#define K 110
+#include <queue>
+#define K 100
 
-using namespace std;
+struct option {
+    int prime;
+    int idx;
+    long long value;
+    bool operator<(const option &hs) const { return value > hs.value; }
+};
 
-int k, n, a[K];
-set<int> s;
+struct multiplied_value {
+    long long value;
+    int prime;
+};
 
-int main()
-{
-	scanf("%d %d", &k, &n);
-	for(int i=0; i<k; ++i)
-		scanf("%d", a+i);
+int main() {
+    int k, n, p[K];
 
-	int lim = 0x7f;
-	s.insert(1);
-	while(n--)
-	{
-		if((int)s.size() > n+10)
-		{
-			auto it = s.end();
-			--it;
-			lim = *it;
-		}
-		int v = *(s.begin());
-		s.erase(s.begin());
+    std::vector<multiplied_value> list;
+    std::priority_queue<option> options;
 
-		for(int i=0; i<k; ++i)
-			if(v*a[i] < lim)
-				s.insert(v*a[i]);
-	}
-	printf("%d", *(s.begin()));
-	return 0;
+    scanf("%d %d", &k, &n);
+    for (int i = 0; i < k; ++i) scanf("%d", p + i);
+
+    list.push_back({1, 1});
+    for (int i = 0; i < k; ++i) options.push({p[i], 0, p[i] * list[0].value});
+
+    for (int i = 0; i < n; ++i) {
+        option selected = options.top();
+        options.pop();
+
+        list.push_back({selected.value, selected.prime});
+
+        int next_idx = selected.idx + 1;
+        while (list[next_idx].prime > selected.prime) ++next_idx;
+
+        options.push(
+            {selected.prime, next_idx, list[next_idx].value * selected.prime});
+    }
+
+    printf("%lld\n", list[n].value);
+
+    return 0;
 }
