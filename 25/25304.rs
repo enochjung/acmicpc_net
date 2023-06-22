@@ -1,23 +1,20 @@
 use std::io;
 
 fn main() {
-    let mut dice: Vec<i32> = get_input();
-
-    dice.sort();
-
-    let reward: i32 = get_reward(&dice);
-
-    println!("{}", reward)
+    let (total_cost, items) = get_input();
+    println!(
+        "{}",
+        if is_correct(total_cost, items) {
+            "Yes"
+        } else {
+            "No"
+        }
+    );
 }
 
-fn get_reward(dice: &Vec<i32>) -> i32 {
-    if dice[0] == dice[2] {
-        return dice[0] * 1000 + 10000;
-    } else if dice[0] == dice[1] || dice[1] == dice[2] {
-        return dice[1] * 100 + 1000;
-    } else {
-        return dice[2] * 100;
-    }
+fn is_correct(total_cost: i32, items: Vec<(i32, i32)>) -> bool {
+    let sum = items.iter().fold(0, |sum, (price, num)| sum + price * num);
+    return sum == total_cost;
 }
 
 fn get_input() -> (i32, Vec<(i32, i32)>) {
@@ -25,11 +22,23 @@ fn get_input() -> (i32, Vec<(i32, i32)>) {
     io::stdin().read_line(&mut s).unwrap();
     let total_cost: i32 = s.trim().parse().unwrap();
 
-    let values: Vec<i32> = input_line
-        .as_mut_str()
-        .split_whitespace()
-        .map(|s| s.parse().unwrap())
-        .collect();
+    let mut s: String = String::new();
+    io::stdin().read_line(&mut s).unwrap();
+    let n: i32 = s.trim().parse().unwrap();
 
-    return (total_cost);
+    let mut items: Vec<(i32, i32)> = Vec::new();
+    for _ in 0..n {
+        let mut s: String = String::new();
+        io::stdin().read_line(&mut s).unwrap();
+
+        let values: Vec<i32> = s
+            .as_mut_str()
+            .split_whitespace()
+            .map(|s| s.parse().unwrap())
+            .collect();
+
+        items.push((values[0], values[1]));
+    }
+
+    return (total_cost, items);
 }
