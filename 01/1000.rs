@@ -1,15 +1,15 @@
-use std::io;
-
 fn main() {
-    let mut s: String = String::new();
+    let (a, b) = get_input();
+    println!("{}", a + b);
+}
 
-    io::stdin().read_line(&mut s).unwrap();
+fn get_input() -> (i32, i32) {
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input).unwrap();
+    let mut iter = input.split_ascii_whitespace().flat_map(str::parse::<i32>);
+    let mut get = || iter.next().unwrap();
 
-    let values: Vec<i32> = s
-        .as_mut_str()
-        .split_whitespace()
-        .map(|s| s.parse().unwrap())
-        .collect();
+    let (a, b) = (get(), get());
 
-    println!("{}", values[0] + values[1]);
+    (a, b)
 }
